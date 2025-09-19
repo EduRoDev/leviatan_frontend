@@ -6,12 +6,14 @@ import Footer from '../footer/Footer';
 interface LayoutProps {
   children: React.ReactNode;
   showSidebar?: boolean;
+  showNavbar?: boolean;
 }
 
-export default function Layout({ children, showSidebar = true }: LayoutProps) {
+export default function Layout({ children, showSidebar = true, showNavbar = true }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-bg-light">
-      <Navbar />
+      {/* Navbar - Solo se muestra si showNavbar es true*/ }
+      {showNavbar && <Navbar />}
       
       <div className="flex flex-1">
         {/* Sidebar - Solo se muestra cuando showSidebar es true */}
