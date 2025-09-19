@@ -1,4 +1,79 @@
+import React, { useState } from 'react';
+import { Enviroment } from '../../../utils/env/enviroment';
+import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import type { DocumentResponse } from '../../../utils/interfaces/document.interface';
+
 export default function UploadDocument() {
+    const [selectedFile, setSelectedFile] = useState<File>();
+    const [uploading, setUploading] = useState<boolean>(false);
+    const [processingStatus, setProcessingStatus] = useState<string>('');
+    const { token } = useAuth();
+    const navigate = useNavigate();
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setSelectedFile(event.target.files[0]);
+        }
+    }
+
+    const handleUpload = async () => {
+        if (!selectedFile) {
+            alert("Por favor, selecciona un archivo antes de subir.");
+            return;
+        }
+
+        if (!token) {
+            alert("No estás autenticado. Por favor, inicia sesión.");
+            return;
+        }
+
+        setUploading(true);
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        try {
+            const res = await fetch(`${Enviroment.API_URL}/documents/uploads`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!res.ok) {
+                throw new Error("Error en la subida del documento");
+            }
+
+            setProcessingStatus("Procesando documento... Esto puede tardar unos minutos.");
+
+            const data: DocumentResponse = await res.json();
+            setProcessingStatus("Documento procesado con éxito.");
+            localStorage.setItem('documentId', data.document.id.toString());
+
+            
+            if (res.status === 200) {
+                navigate('/documents', {
+                    state: {
+                        documentId: data.document.id,
+                        title: data.document.title,
+                    }
+                });
+            }
+
+            setSelectedFile(undefined);
+        } catch (error) {
+            console.error("Error al subir el documento:", error);
+            setProcessingStatus("Error al subir el documento. Por favor, inténtalo de nuevo.");
+        } finally {
+            setUploading(false);
+            setSelectedFile(undefined);
+            setTimeout(() => setProcessingStatus(''), 5000);
+        }
+    }
+
+
     return (
 
         <main className="flex-1 p-8">
@@ -41,87 +116,44 @@ export default function UploadDocument() {
                             Formatos soportados: PDF, DOC, DOCX, TXT
                         </p>
                         {/* Botón primario con colores del manual */}
-                        <button
-                            className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                        >
-                            Seleccionar archivos
-                        </button>
-                    </div>
-                </div>
-
-                {/* Recent Uploads */}
-                <div className="mt-8">
-                    {/* Título en morado principal */}
-                    <h2 className="text-xl font-semibold mb-4 text-primary">
-                        Subidas recientes
-                    </h2>
-                    <div className="space-y-3">
-                        {/* Tarjetas con fondo blanco y borde lavanda */}
-                        <div
-                            className="bg-white border border-lavender rounded-lg p-4 flex items-center justify-between"
+                        <input
+                            type='file'
+                            id='fileInput'
+                            accept='.pdf'
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
+                        <label
+                            htmlFor="fileInput"
+                            className="inline-block bg-primary text-white font-medium py-2 px-4 rounded cursor-pointer hover:bg-primary-dark transition-colors"
                             style={{ boxShadow: '0 2px 4px -1px rgba(109, 40, 217, 0.1)' }}
                         >
-                            <div className="flex items-center space-x-3">
-                                <div
-                                    className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center"
-                                >
-                                    <svg
-                                        className="w-5 h-5 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                                            clipRule="evenodd"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-text-dark">
-                                        Ecuaciones_Diferenciales.pdf
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                        Matemáticas • Hace 2 horas
-                                    </p>
-                                </div>
-                            </div>
-                            <span className="text-green-600 text-sm font-medium">
-                                Procesado
-                            </span>
-                        </div>
+                            Seleccionar Archivo
+                        </label>
 
-                        <div
-                            className="bg-white border border-lavender rounded-lg p-4 flex items-center justify-between"
-                            style={{ boxShadow: '0 2px 4px -1px rgba(109, 40, 217, 0.1)' }}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div
-                                    className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center"
+                        {/* Mostrar archivo seleccionado */}
+                        {selectedFile && (
+                            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p className="text-xs text-gray-500 mb-3">
+                                    Tamaño: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                                <button
+                                    onClick={handleUpload}
+                                    disabled={uploading}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <svg
-                                        className="w-5 h-5 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
-                                            clipRule="evenodd"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-text-dark">
-                                        Mecanica_Cuantica.docx
-                                    </p>
-                                    <p className="text-sm text-gray-500">Física • Hace 1 día</p>
-                                </div>
+                                    {uploading ? 'Subiendo...' : 'Subir archivo'}
+                                </button>
                             </div>
-                            <span className="text-green-600 text-sm font-medium">
-                                Procesado
-                            </span>
-                        </div>
+                        )}
+                        {/* Mostrar estado de procesamiento */}
+                        {processingStatus && (
+                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-blue-700 font-medium">
+                                    {processingStatus}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
