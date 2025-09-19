@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import type { FormEvent } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { PopupEmailPassword, PopupPasswordMismatch } from "../../utils/pop_ups/error_Pops";
 import { PopupUserCreated, PopupLoginSuccess } from "../../utils/pop_ups/confirm_Pops";
 import { Enviroment } from "../../utils/env/enviroment";
+import type { LoginRequest, LoginResponse } from "../../utils/interfaces/login.interface";
+import type { User } from "../../utils/interfaces/user.interface";
+
 
 type Data = {
   name?: string;
@@ -13,6 +18,8 @@ type Data = {
 }
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Data>({
@@ -51,30 +58,68 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? 'auth/login' : 'auth/register';
-      const res = await fetch(`${Enviroment.API_URL}/${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.message || 'Something went wrong');
-      }
-
       if (!isLogin) {
+        const registerData: User = {
+          name: data.name!,
+          last_name: data.last_name!,
+          email: data.email,
+          password: data.password
+        }
+
+        const registerRes = await fetch(`${Enviroment.API_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(registerData)
+        });
+
+        if (!registerRes.ok) {
+          throw new Error('Error en el registro');
+        }
+
         setShowUserCreatedPopup(true);
         setTimeout(() => setShowUserCreatedPopup(false), 3000);
-        setTimeout(() => setIsLogin(true), 3000);
-        console.log('Usuario creado:', result);
-      }
+        setTimeout(() => {
+          setIsLogin(true);
+          setData({
+            name: '',
+            last_name: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          });
+        }, 3000);
+        console.log('Usuario creado:', registerRes);
+      } else {
+        const loginData: LoginRequest = {
+          email: data.email,
+          password: data.password
+        };
 
-      setShowLoginSuccessPopup(true);
-      setTimeout(() => setShowLoginSuccessPopup(false), 3000);
-      console.log('Login exitoso:', result);
-    } catch (err: any) {
+        const loginRes = await fetch(`${Enviroment.API_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(loginData)
+        });
+
+        const loginResult: LoginResponse = await loginRes.json();
+        if (!loginRes.ok) {
+          throw new Error('Credenciales incorrectas');
+        }
+
+        // Guardar datos de login usando el contexto
+        login(loginResult);
+
+        setShowLoginSuccessPopup(true);
+        setTimeout(() => setShowLoginSuccessPopup(false), 5000);
+        setTimeout(() => navigate('/upload'), 3000);
+        console.log('Login exitoso:', loginResult);
+      }
+    }
+    catch (err: any) {
       setShowEmailPasswordPopup(true);
       setTimeout(() => setShowEmailPasswordPopup(false), 3000);
       console.error(err);
