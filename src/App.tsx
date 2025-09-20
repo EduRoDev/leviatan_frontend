@@ -7,12 +7,18 @@ import { ViewDocument } from './components/application/view_document/View_Docume
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { RootRedirect } from './components/auth/RootRedirect';
 import { PublicRoute } from './components/auth/PublicRoute';
+import Landing from './components/landing/landing';
 
 function App() {
-  return (
+  return ( 
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path='/landing' element={
+            <PublicRoute>
+              <Landing/>
+            </PublicRoute>
+          }/>
           {/* Ruta para el login - PÚBLICA */}
           <Route path='/login' element={
             <PublicRoute>
