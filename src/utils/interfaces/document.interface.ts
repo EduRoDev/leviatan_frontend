@@ -34,7 +34,7 @@ export interface DocumentResponse {
     }
 }
 
-export interface DocumentRequest {
+export interface DocumentR {
     id?: number,
     title?: string,
     content?: string,

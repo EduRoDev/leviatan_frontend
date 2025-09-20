@@ -1,9 +1,7 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Landing() {
-    const location = useLocation();
     const navigate = useNavigate();
 
     useAuth();
