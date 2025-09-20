@@ -8,5 +8,5 @@ export function RootRedirect() {
     return <Navigate to="/upload" replace />;
   }
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/landing" replace />;
 }
