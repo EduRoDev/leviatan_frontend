@@ -12,9 +12,11 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.1.13",
+    "motion": "^12.23.16",
     "primereact": "^10.9.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-pdf": "^10.1.0",
     "react-router-dom": "^7.9.1"
   },
   "devDependencies": {
