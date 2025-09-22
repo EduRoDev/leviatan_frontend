@@ -95,7 +95,7 @@ export default function UploadDocument() {
             localStorage.setItem('documentId', data.document.id.toString());
             console.log("Documento subido y procesado:", data);
 
-            // Redirigir a la página de documentos después de 5 segundos
+            // Redirigir a la página de documentos después de 3 segundos
             setTimeout(() => {
                 if (res.status === 200) {
                     navigate('/documents')

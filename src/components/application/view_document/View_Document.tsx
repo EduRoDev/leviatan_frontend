@@ -1,5 +1,10 @@
 import { pdfjs } from 'react-pdf';
 import Pdf_view from './PDF/Pdf_view';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { Enviroment } from '../../../utils/env/enviroment';
+import { useAuth } from '../../../context/AuthContext';
+import type { Summary } from '../../../utils/interfaces/summary.interface';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -8,6 +13,37 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 
 export function ViewDocument() {
+    const documentId = Number(localStorage.getItem('documentId'));
+    const [summary, setSummary] = useState<Summary>({
+        content: '', document_id: 0, id: 0
+    });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { token } = useAuth();
+    console.log('Viewing document with ID:', documentId);
+
+    useEffect(() => {
+        const fetchDocument = async () => {
+            try {
+                const response = await fetch(`${Enviroment.API_URL}/summary/resumen/${documentId}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error("Error fetching summary");
+                }
+                const summary = await response.json();
+                console.log("Document summary data:", summary);
+                setSummary(summary);
+                setIsLoading(false);
+            } catch (error) {
+                console.error("Error fetching document summary:", error);
+                setIsLoading(false);
+            }
+        }
+        fetchDocument();
+    }, [documentId]);
     return (
         <div className="flex h-screen bg-bg-light">
             <main className="flex-1 overflow-hidden">
@@ -19,7 +55,6 @@ export function ViewDocument() {
                             className="max-w-4xl mx-auto bg-white rounded-lg border border-lavender"
                             style={{ boxShadow: '0 10px 25px -5px rgba(109, 40, 217, 0.2)' }}
                         >
-
                             <Pdf_view />
                         </div>
                     </div>
@@ -62,17 +97,14 @@ export function ViewDocument() {
                                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                         ></path>
                                     </svg>
-                                    Puntos Clave
+                                    Resumen
                                 </h4>
                                 <div className="text-sm text-gray-700 space-y-2">
-                                    <p>
-                                        • La física cuántica describe el comportamiento a escala
-                                        atómica
-                                    </p>
-                                    <p>• Introduce conceptos probabilísticos vs deterministas</p>
-                                    <p>• Principio de incertidumbre de Heisenberg</p>
-                                    <p>• Dualidad onda-partícula</p>
-                                    <p>• Aplicaciones en tecnología moderna</p>
+                                    {isLoading ? (
+                                        <p>cargando resumen...</p>
+                                    ) : (
+                                        <p>{summary.content}</p>
+                                    )}
                                 </div>
                             </div>                        {/* Flashcards */}
                             <div
