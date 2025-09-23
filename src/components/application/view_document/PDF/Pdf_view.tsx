@@ -1,15 +1,21 @@
-import { Document, Page } from "react-pdf"
+import { Document, Page,pdfjs } from "react-pdf"
 import { Enviroment } from "../../../../utils/env/enviroment"
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+).toString();
+
 export default function Pdf_view() {
   const [pdfUrl, setPdfUrl] = useState<string | undefined>(undefined)
   const [numPages, setNumPages] = useState<number | undefined>(undefined)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [scale, setScale] = useState<number>(0.75)
+  const [error, setError] = useState<string | null>(null)
 
   const documentId = Number(localStorage.getItem("documentId"))
 
@@ -27,17 +33,27 @@ export default function Pdf_view() {
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)
         setPdfUrl(url)
+        // revocar URL cuando el componente se desmonte
+        return () => {
+          URL.revokeObjectURL(url)
+        }
       } catch (error) {
         console.error("Error fetching document:", error)
+        setError("Error al descargar el documento")
       }
     }
 
-    fetchDocument()
+    if (documentId) fetchDocument()
   }, [documentId])
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     console.log("Document loaded successfully, pages:", numPages)
     setNumPages(numPages)
+  }
+
+  function onDocumentLoadError(error: Error) {
+    console.error("Error loading document:", error)
+    setError("Failed to load PDF document.")
   }
 
   const goToPage = (pageNumber: number) => {
@@ -71,6 +87,20 @@ export default function Pdf_view() {
   }
 
   const width = Math.min(1200 * scale, window.innerWidth - 80)
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center p-8">
+          <svg className="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Error al cargar el documento</h3>
+          <p className="mt-1 text-sm text-gray-500">{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <motion.div
@@ -191,7 +221,7 @@ export default function Pdf_view() {
       <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 to-gray-100 p-2">
         <div className="flex justify-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
+            <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess} onLoadError={onDocumentLoadError}>
               <motion.div
                 key={currentPage}
                 initial={{ opacity: 0, x: 20 }}
