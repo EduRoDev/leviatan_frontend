@@ -33,7 +33,7 @@ function App() {
             path="/upload" 
             element={
               <ProtectedRoute>
-                <Layout showSidebar={true}>
+                <Layout showSidebar={false} >
                   <UploadDocument />
                 </Layout>
               </ProtectedRoute>
