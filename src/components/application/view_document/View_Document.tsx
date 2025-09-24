@@ -1,4 +1,5 @@
 import Pdf_view from './PDF/Pdf_view';
+import { Quiz } from './Quiz/Quiz';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { Enviroment } from '../../../utils/env/enviroment';
@@ -333,7 +334,7 @@ export function ViewDocument() {
                                                 d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"
                                             ></path>
                                         </svg>
-                                        Crear Quiz
+                                        <Quiz />
                                     </button>
                                     <button
                                         className="w-full px-3 py-2 text-left text-sm hover:bg-lavender rounded-lg transition-colors flex items-center text-gray-700 hover:text-primary"
