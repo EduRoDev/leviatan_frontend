@@ -11,7 +11,11 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
+    "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.13",
+    "class-variance-authority": "^0.7.1",
+    "framer-motion": "^12.23.16",
+    "motion": "^12.23.19",
     "primereact": "^10.9.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
