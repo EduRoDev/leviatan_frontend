@@ -73,7 +73,7 @@ export default function UploadDocument() {
                 })
             }, 200)
 
-            const res = await fetch(`${Enviroment.API_URL}/documents/uploads`, {
+            const res = await fetch(`${Enviroment.API_URL}/documents/uploads/1`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -92,10 +92,10 @@ export default function UploadDocument() {
 
             const data: DocumentResponse = await res.json();
             setProcessingStatus("Documento procesado con éxito.");
-            localStorage.setItem('documentId', data.document.id.toString());
+            sessionStorage.setItem('documentId', data.document.id.toString());
             console.log("Documento subido y procesado:", data);
 
-            // Redirigir a la página de documentos después de 3 segundos
+            
             setTimeout(() => {
                 if (res.status === 200) {
                     navigate('/documents')

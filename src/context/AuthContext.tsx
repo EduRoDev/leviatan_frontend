@@ -21,8 +21,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<LoginResponse | null>(null);
 
     useEffect(() => {
-        const savedToken = localStorage.getItem('access_token')
-        const savedUser = localStorage.getItem('user')
+        const savedToken = sessionStorage.getItem('access_token')
+        const savedUser = sessionStorage.getItem('user')
 
         if (savedToken && savedUser) {
             setToken(savedToken);
@@ -34,15 +34,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const login = (loginData: LoginResponse) => {
         setToken(loginData.access_token);
         setUser(loginData);
-        localStorage.setItem('access_token', loginData.access_token);
-        localStorage.setItem('user', JSON.stringify(loginData));
+        sessionStorage.setItem('access_token', loginData.access_token);
+        sessionStorage.setItem('user', JSON.stringify(loginData));
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('user');
     }
 
     const isAuthenticated = !!token;
