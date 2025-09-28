@@ -1,4 +1,5 @@
 import Pdf_view from './PDF/Pdf_view';
+import { pdfjs } from 'react-pdf';
 import { Quiz } from './Quiz/Quiz';
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -9,8 +10,12 @@ import type { Summary } from '../../../utils/interfaces/summary.interface';
 import type { Flashcard } from '../../../utils/interfaces/flashcards.interfaces';
 
 
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+).toString();
 export function ViewDocument() {
-    const documentId = Number(localStorage.getItem('documentId'));
+    const documentId = Number(sessionStorage.getItem('documentId'));
     const [summary, setSummary] = useState<Summary>({
         content: '', document_id: 0, id: 0
     });

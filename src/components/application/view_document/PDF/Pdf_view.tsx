@@ -17,7 +17,7 @@ export default function Pdf_view() {
   const [scale, setScale] = useState<number>(0.75)
   const [error, setError] = useState<string | null>(null)
 
-  const documentId = Number(localStorage.getItem("documentId"))
+  const documentId = Number(sessionStorage.getItem("documentId"))
 
   useEffect(() => {
     const fetchDocument = async () => {
