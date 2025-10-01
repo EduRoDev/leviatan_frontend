@@ -112,7 +112,7 @@ export default function Login() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(loginData),
         });
-        
+
         const loginResult: LoginResponse = await loginRes.json();
         if (!loginRes.ok) throw new Error("Credenciales incorrectas");
 
@@ -120,7 +120,7 @@ export default function Login() {
 
         setShowLoginSuccessPopup(true);
         setTimeout(() => setShowLoginSuccessPopup(false), 5000);
-        setTimeout(() => navigate("/upload"), 3000);
+        setTimeout(() => navigate("/subject"), 3000);
       }
     } catch (err) {
       setShowEmailPasswordPopup(true);

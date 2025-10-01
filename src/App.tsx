@@ -4,6 +4,7 @@ import UploadDocument from "./components/application/upload_document/Upload_Docu
 import Layout from "./components/layout/Layout";
 import Login from "./components/login/Login";
 import { ViewDocument } from "./components/application/view_document/View_Document";
+import { ViewSubject } from "./components/application/view_subject/View_Subject";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RootRedirect } from "./components/auth/RootRedirect";
 import { PublicRoute } from "./components/auth/PublicRoute";
@@ -31,6 +32,17 @@ function App() {
                   <Login />
                 </Layout>
               </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/subject"
+            element={
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <ViewSubject />
+                </Layout>
+              </ProtectedRoute>
             }
           />
 
