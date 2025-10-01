@@ -86,7 +86,7 @@ export function ViewSubject() {
       if (!res.ok) throw new Error("Error al obtener documentos");
       const data: DocumentR[] = await res.json();
       setDocuments(data);
-      console.log(data);
+      
     } catch (err) {
       console.error(err);
     }
@@ -119,9 +119,11 @@ export function ViewSubject() {
               subjects={subjects}
               onCardClick={(s) => {
                 setSelectedSubject(s);
+                sessionStorage.setItem("subjectCreatedId", String(s.id));
                 fetchDocumentsBySubject(Number(s.id));
                 setIsDocsModalOpen(true);
               }}
+              
             />
           )}
         </div>

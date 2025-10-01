@@ -21,6 +21,12 @@ export function DocumentModal({
   onclick,
   loading = false,
 }: DocumentModalProps) {
+
+  const truncateText = (text: string, maxLength: number) => {
+    const words = text.split(' ');
+    if (words.length <= maxLength) return text;
+    return words.slice(0, maxLength).join(' ') + '...';
+  }
   return (
     <AnimatePresence>
       {isOpen && (
@@ -54,16 +60,7 @@ export function DocumentModal({
                     className="border p-4 rounded-lg shadow-sm hover:shadow-md transition"
                   >
                     <h3 className="font-bold text-lg">{doc.title}</h3>
-                    <p className="text-sm text-gray-600">{doc.content}</p>
-                    {doc.file_path && (
-                      <a
-                        href={doc.file_path}
-                        target="_blank"
-                        className="text-purple-600 underline text-sm mt-2 inline-block"
-                      >
-                        Ver archivo
-                      </a>
-                    )}
+                    <p className="text-sm text-gray-600">{truncateText(doc.content,50)}</p>
                   </li>
                 ))}
               </ul>

@@ -37,7 +37,7 @@ export interface DocumentResponse {
 export interface DocumentR {
     id?: number,
     title?: string,
-    content?: string,
+    content: string,
     file_path?: string,
     user_id: number
 }

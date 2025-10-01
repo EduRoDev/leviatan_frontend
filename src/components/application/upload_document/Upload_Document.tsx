@@ -13,6 +13,8 @@ export default function UploadDocument() {
     const [uploadProgress, setUploadProgress] = useState<number>(0)
     const { token } = useAuth();
     const navigate = useNavigate();
+    const subjectDocumentId = Number(sessionStorage.getItem("subjectCreatedId"))
+    console.log("ID de la materia para el documento:", subjectDocumentId);
 
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -73,7 +75,7 @@ export default function UploadDocument() {
                 })
             }, 200)
 
-            const res = await fetch(`${Enviroment.API_URL}/documents/uploads/1`, {
+            const res = await fetch(`${Enviroment.API_URL}/documents/uploads/${subjectDocumentId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
