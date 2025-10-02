@@ -49,6 +49,16 @@ export default function Navbar() {
               >
                 Ver Documentos
               </Link>
+              <Link
+                to="/statistics"
+                className={`transition-colors ${
+                  location.pathname === "/statistics"
+                    ? "text-white"
+                    : "text-white/80 hover:text-white"
+                }`}
+              >
+                Estadísticas
+              </Link>
             </div>
           </div>{" "}
           <div className="flex items-center space-x-4">
@@ -63,7 +73,7 @@ export default function Navbar() {
                 </div>
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-5 h-5 text-white"
+                    className="w-5 h-5 text-white "
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

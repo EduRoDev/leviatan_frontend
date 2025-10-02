@@ -58,7 +58,7 @@ export const HeroSection = ({ heroInView, y, opacity, }: HeroSectionProps) => {
                     >
                         Learn smarter, not harder. Organize your materials and boost your productivity with AI support.
                     </motion.p>
-
+                    {/* Call to Action Buttons */}
                     <motion.div
                         className="flex flex-col sm:flex-row gap-4"
                         initial={{ opacity: 0, y: 20 }}

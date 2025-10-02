@@ -24,6 +24,7 @@ export function ViewSubject() {
   // Crear materia
   const handleAddSubject = async () => {
     if (!newSubject.name) return alert("El nombre es obligatorio");
+    if (!newSubject.description) return alert("La descripción es obligatoria");
     setLoading(true);
 
     try {
@@ -35,6 +36,7 @@ export function ViewSubject() {
         },
         body: JSON.stringify(newSubject),
       });
+      console.log(res);
       if (!res.ok) throw new Error("Error al crear materia");
       const data: Subject = await res.json();
 

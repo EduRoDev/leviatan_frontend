@@ -15,8 +15,7 @@ export default function UploadDocument() {
     const navigate = useNavigate();
     const subjectDocumentId = Number(sessionStorage.getItem("subjectCreatedId"))
     console.log("ID de la materia para el documento:", subjectDocumentId);
-
-
+    
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault()
         setIsDragOver(true)
@@ -74,7 +73,7 @@ export default function UploadDocument() {
                     return prev + Math.random() * 15
                 })
             }, 200)
-
+            
             const res = await fetch(`${Enviroment.API_URL}/documents/uploads/${subjectDocumentId}`, {
                 method: 'POST',
                 headers: {
