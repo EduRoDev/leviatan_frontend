@@ -27,7 +27,8 @@ export default function Pdf_view() {
         const response = await fetch(`${Enviroment.API_URL}/documents/view/${documentId}`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            Content: 'application/pdf'
           }
         })
 

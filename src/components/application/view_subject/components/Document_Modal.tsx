@@ -12,6 +12,7 @@ interface DocumentModalProps {
   }) => void;
   loading?: boolean;
   onclick: () => void;
+  onViewDocument: (documentId: number) => void;
 }
 
 export function DocumentModal({
@@ -19,14 +20,11 @@ export function DocumentModal({
   onClose,
   documents,
   onclick,
+  onViewDocument,
   loading = false,
 }: DocumentModalProps) {
 
-  const truncateText = (text: string, maxLength: number) => {
-    const words = text.split(' ');
-    if (words.length <= maxLength) return text;
-    return words.slice(0, maxLength).join(' ') + '...';
-  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -53,21 +51,44 @@ export function DocumentModal({
                 No hay documentos cargados en esta materia.
               </p>
             ) : (
-              <ul className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+              <ul className="space-y-4 max-h-96 overflow-y-auto">
                 {documents.map((doc) => (
                   <li
                     key={doc.id}
-                    className="border p-4 rounded-lg shadow-sm hover:shadow-md transition"
+                    className="bg-white border-2 border-[#DDD6FE] rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#A78BFA]"
                   >
-                    <h3 className="font-bold text-lg">{doc.title}</h3>
-                    <p className="text-sm text-gray-600">{truncateText(doc.content,50)}</p>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-12 h-12 bg-[#F5F3FF] rounded-xl flex items-center justify-center flex-shrink-0 border border-[#DDD6FE]">
+                          <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-[#1F1F1F] text-lg truncate">{doc.title}</p>
+                          <p className="text-sm text-gray-500 mt-0.5">Documento de estudio</p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => onViewDocument?.(doc.id)}
+                        className="px-5 py-2.5 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-50 shadow-md hover:shadow-xl transition-all duration-300 flex-shrink-0"
+                      >
+                        Ver documento
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
 
             {/* Botones */}
-            <div className="flex justify-end gap-3 pt-3">
+            <div className="flex justify-end gap-4 pt-4">
               <button
                 type="button"
                 onClick={onClose}

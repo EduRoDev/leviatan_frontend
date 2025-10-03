@@ -12,6 +12,7 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.1.13",
+    "apexcharts": "^5.3.5",
     "motion": "^12.23.16",
     "primereact": "^10.9.7",
     "react": "^19.1.1",

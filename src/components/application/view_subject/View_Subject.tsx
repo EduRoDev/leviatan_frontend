@@ -21,6 +21,10 @@ export function ViewSubject() {
 
   const { token } = useAuth();
 
+  const handleViewDocument = (documentId: number) => {
+    sessionStorage.setItem("documentId", String(documentId));
+    navigate("/documents");
+  }
   // Crear materia
   const handleAddSubject = async () => {
     if (!newSubject.name) return alert("El nombre es obligatorio");
@@ -148,8 +152,9 @@ export function ViewSubject() {
           documents={documents}
           onAddDocument={() =>
             console.log("👉 Aquí abrirías modal de agregar documento")
-          }
+          } 
           onclick={() => navigate("/upload")}
+          onViewDocument={handleViewDocument}
         />
       )}
     </motion.main>
