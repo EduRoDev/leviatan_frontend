@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { useAuth } from "../../../../context/AuthContext";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -16,6 +17,7 @@ export default function Pdf_view() {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [scale, setScale] = useState<number>(0.75)
   const [error, setError] = useState<string | null>(null)
+  const { token } = useAuth()
 
   const documentId = Number(sessionStorage.getItem("documentId"))
 
@@ -24,8 +26,13 @@ export default function Pdf_view() {
       try {
         const response = await fetch(`${Enviroment.API_URL}/documents/view/${documentId}`, {
           method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Content: 'application/pdf'
+          }
         })
 
+        console.log("Fetch response:", response)
         if (!response.ok) {
           throw new Error("Error fetching document")
         }

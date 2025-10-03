@@ -13,14 +13,25 @@ export function Quiz() {
     const [showExplanation, setShowExplanation] = useState(false)
     const [score, setScore] = useState(0)
     const [isCompleted, setIsCompleted] = useState(false)
-    const [userAnswers, setUserAnswers] = useState<number[]>([])
-
+    const [userAnswers, setUserAnswers] = useState<{question_id: number, selected_option: string}[]>([])
+    const [startTime, setStartTime] = useState<number | null>(null)
     const documentId = Number(sessionStorage.getItem("documentId"))
     const { token } = useAuth()
+    const userString = sessionStorage.getItem("user")
+    let userId: number | null = null
+    if (userString){
+        try {
+            const userObj = JSON.parse(userString)
+            userId = userObj.user_id ?? null
+        } catch (error) {
+            console.error("Error parsing user from sessionStorage:", error)
+        }
+    }
 
     useEffect(() => {
         const fetchQuiz = async () => {
             try {
+                
                 const response = await fetch(`${Enviroment.API_URL}/quiz/get_quiz/${documentId}`, {
                     method: "GET",
                     headers: {
@@ -41,29 +52,73 @@ export function Quiz() {
             fetchQuiz()
         }
     }, [documentId, token])
+    
+
+    const createAttempt = async (): Promise<boolean> => {
+        if (!quiz || !startTime) return false;
+        const timeTaken = Math.floor((Date.now() - startTime) / 1000)
+        if (!userId) return false;
+        const payload = {
+            user_id: userId,
+            quiz_id: quiz.id,
+            answers: userAnswers,
+            time_taken: timeTaken
+        }
+
+        try {
+            const response = await fetch(`${Enviroment.API_URL}/statistics/record_attempt`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            })
+            if (!response.ok) {
+                throw new Error("Error creating quiz attempt")
+            }
+            console.log("Payload sent:", payload)
+            const result = await response.json()
+            console.log("Quiz attempt recorded:", result)
+            console.log(timeTaken)
+            return true
+        } catch (error) {
+            console.error("Error creating quiz attempt:", error)
+            return false
+        }
+    }
     const handleAnswerSelect = (answerIndex: number) => {
-        if (selectedAnswer === null && quiz?.questions) {
+        if(selectedAnswer === null && quiz?.questions){
             setSelectedAnswer(answerIndex)
             setShowExplanation(true)
 
-
-            const newUserAnswers = [...userAnswers]
-            newUserAnswers[currentQuestion] = answerIndex
-            setUserAnswers(newUserAnswers)
             const currentQuestionData = quiz.questions[currentQuestion]
             const selectedOption = currentQuestionData?.options[answerIndex]
-            if (selectedOption && selectedOption === currentQuestionData?.correct_option) {
+
+            const newAnswer = {
+                question_id: currentQuestionData.id,
+                selected_option: selectedOption || ""
+            }
+            setUserAnswers(prev => [...prev, newAnswer])
+            
+            if (selectedOption && selectedOption === currentQuestionData?.correct_option){
                 setScore(score + 1)
             }
         }
     }
-    const handleNextQuestion = () => {
+    const handleNextQuestion = async () => {
         if (quiz?.questions && currentQuestion < quiz.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1)
             setSelectedAnswer(null)
             setShowExplanation(false)
         } else {
-            setIsCompleted(true)
+            const success = await createAttempt()
+            if (success) {
+                setIsCompleted(true)
+            } else {
+                // Si falla, igualmente marcar completado o mostrar error según UX
+                setIsCompleted(true)
+            }
         }
     }
 
@@ -74,6 +129,7 @@ export function Quiz() {
         setScore(0)
         setIsCompleted(false)
         setUserAnswers([])
+        setStartTime(Date.now())
     }
 
     const closeModal = () => {
@@ -90,7 +146,10 @@ export function Quiz() {
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.3 } }}
                 exit={{ opacity: 0 }}
                 className="w-full text-left"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                    setIsModalOpen(true)
+                    setStartTime(Date.now())
+                }}
             >
                 Quiz
             </motion.button>

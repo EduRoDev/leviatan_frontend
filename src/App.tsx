@@ -3,7 +3,9 @@ import { AuthProvider } from "./context/AuthContext";
 import UploadDocument from "./components/application/upload_document/Upload_Document";
 import Layout from "./components/layout/Layout";
 import Login from "./components/login/Login";
+import { Statistics } from "./components/application/statistics_user/statistics_user";
 import { ViewDocument } from "./components/application/view_document/View_Document";
+import { ViewSubject } from "./components/application/view_subject/View_Subject";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RootRedirect } from "./components/auth/RootRedirect";
 import { PublicRoute } from "./components/auth/PublicRoute";
@@ -34,6 +36,17 @@ function App() {
             }
           />
 
+          <Route
+            path="/subject"
+            element={
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <ViewSubject />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Ruta para subir documentos (con sidebar) - PROTEGIDA */}
           <Route
             path="/upload"
@@ -58,6 +71,18 @@ function App() {
             }
           />
 
+          {/* Ruta para las estadísticas - PROTEGIDA */}
+          <Route
+            path="/statistics"
+            element={
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <Statistics />
+                </Layout>
+              </ProtectedRoute>
+            }
+          
+          />
           {/* Ruta por defecto - redirige según autenticación */}
           <Route path="/" element={<RootRedirect />} />
 
