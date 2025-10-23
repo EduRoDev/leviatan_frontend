@@ -1,4 +1,3 @@
-
 import { motion, AnimatePresence } from "framer-motion"
 import { useEffect, useState } from "react"
 import type { Quiz } from "../../../../utils/interfaces/quiz.interface"
@@ -13,13 +12,15 @@ export function Quiz() {
     const [showExplanation, setShowExplanation] = useState(false)
     const [score, setScore] = useState(0)
     const [isCompleted, setIsCompleted] = useState(false)
-    const [userAnswers, setUserAnswers] = useState<{question_id: number, selected_option: string}[]>([])
+    const [userAnswers, setUserAnswers] = useState<{ question_id: number, selected_option: string }[]>([])
     const [startTime, setStartTime] = useState<number | null>(null)
+    const [isLoadingQuiz, setIsLoadingQuiz] = useState<boolean>(false)
+    const [quizExists, setQuizExists] = useState<boolean | null>(null)
     const documentId = Number(sessionStorage.getItem("documentId"))
     const { token } = useAuth()
     const userString = sessionStorage.getItem("user")
     let userId: number | null = null
-    if (userString){
+    if (userString) {
         try {
             const userObj = JSON.parse(userString)
             userId = userObj.user_id ?? null
@@ -29,30 +30,68 @@ export function Quiz() {
     }
 
     useEffect(() => {
-        const fetchQuiz = async () => {
+        const checkQuizExists = async () => {
             try {
-                
                 const response = await fetch(`${Enviroment.API_URL}/quiz/get_quiz/${documentId}`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 })
-                if (!response.ok) {
-                    throw new Error("Error fetching quiz")
-                } const quiz = await response.json()
-                console.log("Quiz data:", quiz)
-                setQuiz(quiz)
+                if (response.ok) {
+                    const quiz = await response.json()
+                    console.log("Quiz data:", quiz)
+                    setQuiz(quiz)
+                    setQuizExists(true)
+                } else if (response.status === 404) {
+                    setQuizExists(false)
+                }
             } catch (error) {
-                console.error("Error fetching quiz:", error)
+                console.error("Error checking quiz:", error)
+                setQuizExists(false)
             }
         }
 
         if (documentId && token) {
-            fetchQuiz()
+            checkQuizExists()
         }
     }, [documentId, token])
-    
+
+    const handleCreateQuiz = async () => {
+        setIsLoadingQuiz(true)
+        try {
+            const response = await fetch(
+                `${Enviroment.API_URL}/quiz/create/${documentId}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
+            if (!response.ok) {
+                throw new Error("Error creating quiz")
+            }
+            const data = await response.json()
+            console.log("Quiz created:", data)
+            
+            // Extraer el quiz del objeto de respuesta
+            const newQuiz = data.quiz || data
+            console.log("Quiz object:", newQuiz)
+            console.log("Quiz questions:", newQuiz.questions)
+            
+            setQuiz(newQuiz)
+            setQuizExists(true)
+            setStartTime(Date.now())
+        }
+        catch (error) {
+            console.error("Error creating quiz:", error)
+        } finally {
+            setIsLoadingQuiz(false)
+        }
+    }
 
     const createAttempt = async (): Promise<boolean> => {
         if (!quiz || !startTime) return false;
@@ -87,8 +126,9 @@ export function Quiz() {
             return false
         }
     }
+
     const handleAnswerSelect = (answerIndex: number) => {
-        if(selectedAnswer === null && quiz?.questions){
+        if (selectedAnswer === null && quiz?.questions) {
             setSelectedAnswer(answerIndex)
             setShowExplanation(true)
 
@@ -100,12 +140,13 @@ export function Quiz() {
                 selected_option: selectedOption || ""
             }
             setUserAnswers(prev => [...prev, newAnswer])
-            
-            if (selectedOption && selectedOption === currentQuestionData?.correct_option){
+
+            if (selectedOption && selectedOption === currentQuestionData?.correct_option) {
                 setScore(score + 1)
             }
         }
     }
+
     const handleNextQuestion = async () => {
         if (quiz?.questions && currentQuestion < quiz.questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1)
@@ -116,7 +157,6 @@ export function Quiz() {
             if (success) {
                 setIsCompleted(true)
             } else {
-                // Si falla, igualmente marcar completado o mostrar error según UX
                 setIsCompleted(true)
             }
         }
@@ -132,6 +172,13 @@ export function Quiz() {
         setStartTime(Date.now())
     }
 
+    const handleQuizClick = () => {
+        setIsModalOpen(true)
+        if (quizExists === true && quiz?.questions?.length) {
+            setStartTime(Date.now())
+        }
+    }
+
     const closeModal = () => {
         setIsModalOpen(false)
         resetQuiz()
@@ -139,17 +186,24 @@ export function Quiz() {
 
     const progress = quiz?.questions?.length ? ((currentQuestion + 1) / quiz.questions.length) * 100 : 0
 
+    // Verificar si el quiz está listo para mostrarse
+    const isQuizReady = quizExists === true && quiz?.questions && Array.isArray(quiz.questions) && quiz.questions.length > 0 && !isLoadingQuiz
+
+    // Debug logs
+    useEffect(() => {
+        console.log("Quiz state:", quiz)
+        console.log("Quiz exists:", quizExists)
+        console.log("Is loading:", isLoadingQuiz)
+        console.log("Is quiz ready:", isQuizReady)
+    }, [quiz, quizExists, isLoadingQuiz, isQuizReady])
+
     return (
         <>
             <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.3 } }}
                 exit={{ opacity: 0 }}
-                className="w-full text-left"
-                onClick={() => {
-                    setIsModalOpen(true)
-                    setStartTime(Date.now())
-                }}
+                className="w-full text-left" onClick={handleQuizClick}
             >
                 Quiz
             </motion.button>
@@ -163,7 +217,6 @@ export function Quiz() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
-
                         <motion.div
                             className="absolute inset-0 bg-black/50"
                             onClick={closeModal}
@@ -171,7 +224,6 @@ export function Quiz() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                         />
-
 
                         <motion.div
                             className="relative bg-white rounded-xl shadow-2xl w-[90%] max-w-2xl max-h-[80vh] overflow-hidden z-10"
@@ -194,7 +246,7 @@ export function Quiz() {
                                         </svg>
                                     </button>
                                 </div>
-                                {!isCompleted && quiz?.questions?.length && (
+                                {!isCompleted && isQuizReady && (
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm text-white/90">
                                             <span>
@@ -213,8 +265,17 @@ export function Quiz() {
                                     </div>
                                 )}
                             </div>
+
                             <div className="p-6 overflow-y-auto max-h-[60vh]">
-                                {!quiz?.questions?.length ? (
+                                {isLoadingQuiz ? (
+                                    <motion.div className="text-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                        <motion.div
+                                            className="w-16 h-16 mx-auto mb-4 border-4 border-primary/30 border-t-primary rounded-full animate-spin"
+                                        />
+                                        <p className="text-primary text-lg font-medium">Generando quiz...</p>
+                                        <p className="text-gray-500 text-sm mt-2">Por favor espera mientras creamos tu quiz</p>
+                                    </motion.div>
+                                ) : quizExists === false ? (
                                     <motion.div className="text-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                         <svg
                                             className="mx-auto h-16 w-16 text-gray-400 mb-4"
@@ -229,10 +290,40 @@ export function Quiz() {
                                                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                                             />
                                         </svg>
-                                        <p className="text-gray-500 text-lg">Cargando quiz...</p>
+                                        <p className="text-gray-500 text-lg mb-4">No hay quiz disponible</p>
+                                        <button
+                                            onClick={handleCreateQuiz}
+                                            className="bg-gradient-to-r from-primary to-primary-light text-white px-6 py-3 rounded-lg hover:brightness-110 transition-all duration-200 font-medium"
+                                        >
+                                            Generar Quiz
+                                        </button>
+                                        <p className="text-xs text-gray-400 mt-2">
+                                            Haz clic para crear un quiz del documento
+                                        </p>
+                                    </motion.div>
+                                ) : quizExists === null ? (
+                                    <motion.div className="text-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                        <div className="w-16 h-16 mx-auto mb-4 border-4 border-gray-300 border-t-primary rounded-full animate-spin" />
+                                        <p className="text-gray-500 text-lg">Verificando quiz...</p>
+                                    </motion.div>
+                                ) : !isQuizReady ? (
+                                    <motion.div className="text-center py-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                        <svg
+                                            className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                            />
+                                        </svg>
+                                        <p className="text-gray-500 text-lg">Cargando preguntas del quiz...</p>
                                     </motion.div>
                                 ) : isCompleted ? (
-
                                     <motion.div
                                         className="text-center py-8"
                                         initial={{ opacity: 0, y: 20 }}
@@ -258,7 +349,9 @@ export function Quiz() {
                                         </motion.div>
 
                                         <h3 className="text-2xl font-bold text-gray-800 mb-2">¡Quiz Completado!</h3>
-                                        <p className="text-gray-600 mb-6">Has terminado el quiz exitosamente</p>                    <div className="bg-gradient-to-r from-primary/10 to-primary-light/10 rounded-lg p-6 mb-6 border border-lavender">
+                                        <p className="text-gray-600 mb-6">Has terminado el quiz exitosamente</p>
+
+                                        <div className="bg-gradient-to-r from-primary/10 to-primary-light/10 rounded-lg p-6 mb-6 border border-lavender">
                                             <div className="text-3xl font-bold text-primary mb-2">
                                                 {score} / {quiz?.questions?.length || 0}
                                             </div>
@@ -275,15 +368,16 @@ export function Quiz() {
                                         </button>
                                     </motion.div>
                                 ) : (
-
                                     <motion.div
                                         key={currentQuestion}
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20 }}
                                         transition={{ duration: 0.3 }}
-                                    >                    <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-relaxed">
-                                            {quiz?.questions?.[currentQuestion]?.question_text}                    </h3>
+                                    >
+                                        <h3 className="text-xl font-semibold text-gray-800 mb-6 leading-relaxed">
+                                            {quiz?.questions?.[currentQuestion]?.question_text}
+                                        </h3>
 
                                         <div className="space-y-3 mb-6">
                                             {quiz?.questions?.[currentQuestion]?.options?.map((option, index) => {
@@ -355,6 +449,7 @@ export function Quiz() {
                                                 )
                                             })}
                                         </div>
+
                                         <AnimatePresence>
                                             {showExplanation && (
                                                 <motion.div
@@ -378,7 +473,8 @@ export function Quiz() {
                                                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                             />
                                                         </svg>
-                                                        <div>                              <h4 className="font-medium text-blue-800 mb-1">Explicación</h4>
+                                                        <div>
+                                                            <h4 className="font-medium text-blue-800 mb-1">Explicación</h4>
                                                             <p className="text-blue-700 text-sm leading-relaxed">
                                                                 {selectedAnswer !== null && quiz?.questions?.[currentQuestion]?.correct_option
                                                                     ? `La respuesta correcta es: ${quiz.questions[currentQuestion].correct_option}`
@@ -391,7 +487,6 @@ export function Quiz() {
                                             )}
                                         </AnimatePresence>
 
-
                                         <AnimatePresence>
                                             {showExplanation && (
                                                 <motion.div
@@ -402,7 +497,8 @@ export function Quiz() {
                                                     transition={{ delay: 0.2 }}
                                                 >
                                                     <button
-                                                        onClick={handleNextQuestion} className="bg-gradient-to-r from-primary to-primary-light text-white px-6 py-2 rounded-lg hover:brightness-110 transition-all duration-200 font-medium"
+                                                        onClick={handleNextQuestion}
+                                                        className="bg-gradient-to-r from-primary to-primary-light text-white px-6 py-2 rounded-lg hover:brightness-110 transition-all duration-200 font-medium"
                                                     >
                                                         {quiz?.questions && currentQuestion < quiz.questions.length - 1 ? "Siguiente Pregunta" : "Ver Resultados"}
                                                     </button>
