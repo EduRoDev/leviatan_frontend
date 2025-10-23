@@ -93,7 +93,7 @@ export default function UploadDocument() {
 
             const data: DocumentResponse = await res.json();
             setProcessingStatus("Documento procesado con éxito.");
-            sessionStorage.setItem('documentId', data.document.id.toString());
+            sessionStorage.setItem('documentId', data.id.toString());
             console.log("Documento subido y procesado:", data);
 
             
