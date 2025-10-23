@@ -203,7 +203,7 @@ export function Quiz() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.3 } }}
                 exit={{ opacity: 0 }}
-                className="w-full text-left" onClick={handleQuizClick}
+                className="w-full text-left bg-gradient-to-r from-primary to-primary-light text-white rounded-lg hover:from-primary-light hover:to-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2" onClick={handleQuizClick}
             >
                 Quiz
             </motion.button>
