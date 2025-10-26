@@ -21,9 +21,17 @@ interface UserStatistics {
     recent_attempts: RecentAttempt[];
 }
 
+interface SubjectProgress {
+    average_score: number;
+    document_id: number;
+    subject_id: number;
+    total_attempts: number;
+}
+
 export function Statistics() {
     const { token } = useAuth();
     const [statistics, setStatistics] = useState<UserStatistics | null>(null);
+    const [subjectProgress, setSubjectProgress] = useState<SubjectProgress[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -43,8 +51,7 @@ export function Statistics() {
             } finally {
                 setLoading(false);
             }
-        };
-        const fetchUserProgressBySubject = async () => {
+        };        const fetchUserProgressBySubject = async () => {
             try {
                 const res = await fetch(`${Enviroment.API_URL}/statistics/subject/progress`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -52,10 +59,9 @@ export function Statistics() {
                 if (!res.ok) throw new Error("Error al obtener progreso por materia");
                 const data = await res.json();
                 console.log(data);
+                setSubjectProgress(data);
             } catch (err) {
                 console.error(err);
-            } finally {
-                setLoading(false);
             }
         }
 
@@ -438,6 +444,260 @@ export function Statistics() {
                         />
                     </motion.div>
                 </div>
+
+                {/* Subject Progress Section */}
+                {subjectProgress.length > 0 && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.9 }}
+                            className="mb-6 mt-8"
+                        >
+                            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                                Progreso por Materia
+                            </h2>
+                            <p className="text-gray-600">Tu desempeño en cada materia y documento</p>
+                        </motion.div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            {/* Subject Progress Bar Chart */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.0 }}
+                                className="bg-white rounded-xl shadow-lg p-6"
+                            >
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Promedio por Materia</h2>
+                                <Chart
+                                    options={{
+                                        chart: {
+                                            type: 'bar',
+                                            toolbar: { show: false }
+                                        },
+                                        plotOptions: {
+                                            bar: {
+                                                borderRadius: 8,
+                                                horizontal: true,
+                                                dataLabels: {
+                                                    position: 'top'
+                                                }
+                                            }
+                                        },
+                                        colors: ['#10B981'],
+                                        xaxis: {
+                                            categories: subjectProgress.map((_, index) => `Materia ${index + 1}`),
+                                            labels: {
+                                                style: {
+                                                    colors: '#6B7280'
+                                                }
+                                            },
+                                            min: 0,
+                                            max: 100
+                                        },
+                                        yaxis: {
+                                            labels: {
+                                                style: {
+                                                    colors: '#6B7280'
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                            borderColor: '#E5E7EB'
+                                        },
+                                        dataLabels: {
+                                            enabled: true,
+                                            formatter: (val) => `${val}%`,
+                                            offsetX: 30,
+                                            style: {
+                                                fontSize: '12px',
+                                                colors: ['#374151']
+                                            }
+                                        },
+                                        tooltip: {
+                                            y: {
+                                                formatter: (value) => `${value}%`
+                                            }
+                                        }
+                                    } as ApexOptions}
+                                    series={[
+                                        {
+                                            name: 'Promedio',
+                                            data: subjectProgress.map(progress => progress.average_score)
+                                        }
+                                    ]}
+                                    type="bar"
+                                    height={300}
+                                />
+                            </motion.div>
+
+                            {/* Attempts per Subject */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.1 }}
+                                className="bg-white rounded-xl shadow-lg p-6"
+                            >
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Intentos por Materia</h2>
+                                <Chart
+                                    options={{
+                                        chart: {
+                                            type: 'bar',
+                                            toolbar: { show: false }
+                                        },
+                                        plotOptions: {
+                                            bar: {
+                                                borderRadius: 8,
+                                                horizontal: false,
+                                                columnWidth: '60%'
+                                            }
+                                        },
+                                        colors: ['#3B82F6'],
+                                        xaxis: {
+                                            categories: subjectProgress.map((_, index) => `Materia ${index + 1}`),
+                                            labels: {
+                                                style: {
+                                                    colors: '#6B7280'
+                                                }
+                                            }
+                                        },
+                                        yaxis: {
+                                            labels: {
+                                                style: {
+                                                    colors: '#6B7280'
+                                                }
+                                            },
+                                            title: {
+                                                text: 'Número de Intentos',
+                                                style: {
+                                                    color: '#6B7280'
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                            borderColor: '#E5E7EB'
+                                        },
+                                        dataLabels: {
+                                            enabled: true,
+                                            style: {
+                                                fontSize: '12px',
+                                                colors: ['#374151']
+                                            }
+                                        },
+                                        tooltip: {
+                                            y: {
+                                                formatter: (value) => `${value} intentos`
+                                            }
+                                        }
+                                    } as ApexOptions}
+                                    series={[
+                                        {
+                                            name: 'Intentos',
+                                            data: subjectProgress.map(progress => progress.total_attempts)
+                                        }
+                                    ]}
+                                    type="bar"
+                                    height={300}
+                                />
+                            </motion.div>
+                        </div>
+
+                        {/* Subject Progress Table */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.2 }}
+                            className="bg-white rounded-xl shadow-lg p-6 mb-8"
+                        >
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Detalle por Materia</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b-2 border-gray-200">
+                                            <th className="text-left py-3 px-4 text-gray-600 font-semibold">ID Materia</th>
+                                            <th className="text-left py-3 px-4 text-gray-600 font-semibold">ID Documento</th>
+                                            <th className="text-left py-3 px-4 text-gray-600 font-semibold">Promedio</th>
+                                            <th className="text-left py-3 px-4 text-gray-600 font-semibold">Total Intentos</th>
+                                            <th className="text-left py-3 px-4 text-gray-600 font-semibold">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {subjectProgress.map((progress, index) => (
+                                            <motion.tr
+                                                key={index}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 1.3 + index * 0.1 }}
+                                                className="border-b border-gray-100 hover:bg-gray-50"
+                                            >
+                                                <td className="py-3 px-4">
+                                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                                        Materia #{progress.subject_id}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                                                        Doc #{progress.document_id}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`font-bold text-lg ${
+                                                            progress.average_score >= 70 ? 'text-green-600' :
+                                                            progress.average_score >= 50 ? 'text-yellow-600' :
+                                                            'text-red-600'
+                                                        }`}>
+                                                            {progress.average_score}%
+                                                        </span>
+                                                        <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
+                                                            <div 
+                                                                className={`h-2 rounded-full ${
+                                                                    progress.average_score >= 70 ? 'bg-green-500' :
+                                                                    progress.average_score >= 50 ? 'bg-yellow-500' :
+                                                                    'bg-red-500'
+                                                                }`}
+                                                                style={{ width: `${progress.average_score}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                                                        {progress.total_attempts} {progress.total_attempts === 1 ? 'intento' : 'intentos'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    {progress.average_score >= 70 ? (
+                                                        <span className="flex items-center gap-1 text-green-600 font-semibold">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            Excelente
+                                                        </span>
+                                                    ) : progress.average_score >= 50 ? (
+                                                        <span className="flex items-center gap-1 text-yellow-600 font-semibold">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            Bueno
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1 text-red-600 font-semibold">
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                            Mejorar
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
 
                 {/* Recent Attempts */}
                 <motion.div
