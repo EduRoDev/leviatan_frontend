@@ -5,6 +5,7 @@ import Footer from '../footer/Footer';
 interface LayoutProps {
   children: React.ReactNode
   showNavbar?: boolean
+  showSidebar?: boolean
 }
 
 export default function Layout({ children, showNavbar = true }: LayoutProps) {
