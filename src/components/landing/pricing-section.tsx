@@ -1,5 +1,4 @@
 import { motion } from "framer-motion"
-import { useState } from "react"
 import { Card, CardContent } from ".//card"
 import { Button } from ".//button"
 
@@ -10,8 +9,6 @@ interface PricingSectionProps {
 }
 
 export const PricingSection = ({ pricingInView }: PricingSectionProps) => {
-    const [hoveredPlan, setHoveredPlan] = useState<Plan | null>(null)
-
     const handleSubscription = (plan: Plan) => {
         console.log("Suscribiendo al plan:", plan)
     }
@@ -67,9 +64,7 @@ export const PricingSection = ({ pricingInView }: PricingSectionProps) => {
                     <p className="text-xl text-gray-700 max-w-2xl mx-auto">
                         Flexible pricing options designed to grow with your academic journey.
                     </p>
-                </motion.div>
-
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                </motion.div>                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {plans.map((plan, i) => (
                         <motion.div
                             key={plan.name}
@@ -77,8 +72,6 @@ export const PricingSection = ({ pricingInView }: PricingSectionProps) => {
                             animate={pricingInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ delay: i * 0.2, duration: 0.8 }}
                             whileHover={{ y: -10, scale: 1.02 }}
-                            onHoverStart={() => setHoveredPlan(plan.type)}
-                            onHoverEnd={() => setHoveredPlan(null)}
                             className="relative group"
                         >
                             {plan.popular && (

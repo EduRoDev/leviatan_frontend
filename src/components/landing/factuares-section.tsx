@@ -41,9 +41,8 @@ export const FeaturesSection = ({ featuresInView }: FeaturesSectionProps) => {
                         Experience the future of learning with AI-powered tools designed to maximize your academic potential.
                     </p>
                 </motion.div>
-
                 <div className="grid md:grid-cols-3 gap-8">
-                    {benefits.map((benefit, i) => (
+                    {benefits.map((benefit) => (
                         <motion.div
                             key={benefit.title}
                             initial={{ opacity: 0, y: 50 }}
