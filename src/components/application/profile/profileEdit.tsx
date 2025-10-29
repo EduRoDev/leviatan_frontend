@@ -109,10 +109,10 @@ export default function ProfileEdit() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/subject")}
           className="flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-8 transition-colors font-medium text-sm"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,11 +121,17 @@ export default function ProfileEdit() {
           Volver
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="bg-purple-600 px-6 sm:px-8 py-8">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white/15 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Columna izquierda - Información del perfil */}
+          <div className="lg:col-span-1">
+            <h2 className="text-2xl font-bold text-gray-900">Editar Perfil</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Actualiza tu información personal y de la cuenta. Los cambios se guardarán para tu próxima sesión.
+            </p>
+            
+            <div className="mt-6 flex items-center gap-4">
+              <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -135,118 +141,140 @@ export default function ProfileEdit() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Editar Perfil</h1>
-                <p className="text-purple-100 text-sm mt-1">Actualiza tu información personal</p>
+                <button 
+                  className="text-sm font-medium text-purple-600 hover:text-purple-700" 
+                  type="button"
+                >
+                  Cambiar foto
+                </button>
+                <p className="text-xs text-gray-500 mt-1">
+                  JPG, GIF o PNG. 1MB max.
+                </p>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="px-6 sm:px-8 py-8">
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
+          {/* Columna derecha - Formulario */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm">
+              <form onSubmit={handleSubmit}>
+                <div className="p-6 sm:p-8 space-y-8">
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                      <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                      <span className="text-sm">{error}</span>
+                    </div>
+                  )}
 
-            {success && (
-              <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start gap-3">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-                <span className="text-sm">{success}</span>
-              </div>
-            )}
+                  {success && (
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                      <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                      <span className="text-sm">{success}</span>
+                    </div>
+                  )}
 
-            <div className="space-y-5">
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={userData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
-                  placeholder="Ingresa tu nombre"
-                />
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Nombre - Floating label */}
+                    <div className="relative floating-label-input">
+                      <input
+                        className="block w-full px-3 py-2 bg-transparent border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-purple-600 peer text-gray-900 placeholder-transparent"
+                        id="name"
+                        name="name"
+                        placeholder="Nombre"
+                        type="text"
+                        value={userData.name}
+                        onChange={handleChange}
+                        required
+                      />
+                      <label
+                        className="absolute left-3 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-sm peer-focus:text-purple-600"
+                        htmlFor="name"
+                      >
+                        Nombre
+                      </label>
+                    </div>
 
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Apellido
-                </label>
-                <input
-                  type="text"
-                  id="last_name"
-                  name="last_name"
-                  value={userData.last_name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
-                  placeholder="Ingresa tu apellido"
-                />
-              </div>
+                    {/* Apellido - Floating label */}
+                    <div className="relative floating-label-input">
+                      <input
+                        className="block w-full px-3 py-2 bg-transparent border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-purple-600 peer text-gray-900 placeholder-transparent"
+                        id="last_name"
+                        name="last_name"
+                        placeholder="Apellido"
+                        type="text"
+                        value={userData.last_name}
+                        onChange={handleChange}
+                        required
+                      />
+                      <label
+                        className="absolute left-3 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-sm peer-focus:text-purple-600"
+                        htmlFor="last_name"
+                      >
+                        Apellido
+                      </label>
+                    </div>
+                  </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={userData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
-                  placeholder="correo@ejemplo.com"
-                />
-              </div>
+                  {/* Email - Floating label */}
+                  <div className="relative floating-label-input">
+                    <input
+                      className="block w-full px-3 py-2 bg-transparent border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-purple-600 peer text-gray-900 placeholder-transparent"
+                      id="email"
+                      name="email"
+                      placeholder="Correo Electrónico"
+                      type="email"
+                      value={userData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                    <label
+                      className="absolute left-3 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-sm peer-focus:text-purple-600"
+                      htmlFor="email"
+                    >
+                      Correo Electrónico
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer del formulario */}
+                <div className="bg-gray-50 px-6 sm:px-8 py-4 flex justify-end items-center space-x-4 rounded-b-lg">
+                  <button
+                    className="px-6 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-colors"
+                    type="button"
+                    onClick={() => navigate(-1)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    className="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-purple-600 rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <span>Guardando...</span>
+                      </>
+                    ) : (
+                      'Guardar Cambios'
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <div className="mt-8 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Guardando...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>Guardar Cambios</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
