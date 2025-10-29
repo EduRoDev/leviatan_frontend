@@ -10,6 +10,8 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RootRedirect } from "./components/auth/RootRedirect";
 import { PublicRoute } from "./components/auth/PublicRoute";
 import Landing from "./components/landing/landing";
+import ProfileEdit from "./components/application/profile/profileEdit";
+import ProfileChangePass from "./components/application/profile/profileChangePass";
 
 function App() {
   return (
@@ -69,9 +71,7 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             }
-          />
-
-          {/* Ruta para las estadísticas - PROTEGIDA */}
+          />          {/* Ruta para las estadísticas - PROTEGIDA */}
           <Route
             path="/statistics"
             element={
@@ -83,6 +83,31 @@ function App() {
             }
           
           />
+
+          {/* Ruta para editar perfil - PROTEGIDA */}
+          <Route
+            path="/profile/edit"
+            element={
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <ProfileEdit />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Ruta para cambiar contraseña - PROTEGIDA */}
+          <Route
+            path="/profile/change-password"
+            element={
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <ProfileChangePass />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
           {/* Ruta por defecto - redirige según autenticación */}
           <Route path="/" element={<RootRedirect />} />
 
