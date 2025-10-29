@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-xl font-bold text-primary mb-2">Leviatan</h3>
+            <h3 className="text-xl font-bold text-primary mb-2">Teach bot</h3>
             <p className="text-gray-600 mb-3 max-w-md text-sm">
               Plataforma inteligente para la gestión y análisis de documentos académicos. Optimiza tu aprendizaje con
               IA.
