@@ -15,6 +15,12 @@ export default function Pdf_view() {
   const [scale, setScale] = useState<number>(0.75)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [audioPlaying, setAudioPlaying] = useState<boolean>(false)
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+  const [audioLoading, setAudioLoading] = useState<boolean>(false)
+  const [audioError, setAudioError] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [duration, setDuration] = useState<number>(0)
   const { token } = useAuth()
 
   const documentId = Number(sessionStorage.getItem("documentId"))
@@ -70,8 +76,108 @@ export default function Pdf_view() {
       if (objectUrl) {
         URL.revokeObjectURL(objectUrl)
       }
+      if (audio) {
+        audio.pause()
+        audio.src = ""
+      }
     }
-  }, [documentId, token])
+  }, [documentId, token, audio])
+
+  const fetchTextToSpeech = async () => {
+    if (!documentId || !token) {
+      setAudioError("Faltan datos del documento para TTS")
+      return
+    }
+
+    try {
+      setAudioLoading(true)
+      setAudioError(null)
+
+      const response = await fetch(`${Enviroment.API_URL}/documents/text_to_speech/${documentId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener TTS: ${response.status}`)
+      }
+
+      const blob = await response.blob()
+      const audioUrl = URL.createObjectURL(blob)
+      const newAudio = new Audio(audioUrl)
+
+      // Configurar eventos del audio
+      newAudio.addEventListener("loadedmetadata", () => {
+        setDuration(newAudio.duration)
+      })
+
+      newAudio.addEventListener("timeupdate", () => {
+        setCurrentTime(newAudio.currentTime)
+      })
+
+      newAudio.addEventListener("ended", () => {
+        setAudioPlaying(false)
+        setCurrentTime(0)
+      })
+
+      newAudio.addEventListener("error", () => {
+        setAudioError("Error al reproducir el audio")
+        setAudioPlaying(false)
+      })
+
+      setAudio(newAudio)
+      setAudioLoading(false)
+    } catch (err) {
+      console.error("Error fetching TTS:", err)
+      setAudioError("Error al cargar el audio del documento")
+      setAudioLoading(false)
+    }
+  }
+
+  const playAudio = () => {
+    if (!audio) {
+      fetchTextToSpeech()
+    } else {
+      audio.play()
+      setAudioPlaying(true)
+    }
+  }
+
+  const pauseAudio = () => {
+    if (audio) {
+      audio.pause()
+      setAudioPlaying(false)
+    }
+  }
+
+  const stopAudio = () => {
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+      setAudioPlaying(false)
+      setCurrentTime(0)
+    }
+  }
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audio || !duration) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const percentage = x / rect.width
+    const newTime = percentage * duration
+
+    audio.currentTime = newTime
+    setCurrentTime(newTime)
+  }
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages)
@@ -165,11 +271,12 @@ export default function Pdf_view() {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="bg-white border-b border-gray-200 p-4 flex items-center justify-between shadow-sm flex-shrink-0"
+        className="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm flex-shrink-0 flex-wrap gap-4"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
+        {/* Controles de navegación de páginas */}
         <div className="flex items-center space-x-4">
           <motion.button
             onClick={goToPreviousPage}
@@ -229,6 +336,100 @@ export default function Pdf_view() {
           </motion.button>
         </div>
 
+        {/* Spacer para empujar los controles a la derecha */}
+        <div className="flex-1"></div>
+
+        {/* Controles de Audio TTS */}
+        <motion.div
+          className="flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-purple-100 px-2 py-2 rounded-lg border border-purple-200"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          {audioLoading ? (
+            <div className="flex items-center space-x-2">
+              <svg
+                className="animate-spin h-5 w-5 text-purple-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span className="text-sm text-purple-700">Cargando audio...</span>
+            </div>
+          ) : (
+            <>
+              <motion.button
+                onClick={audioPlaying ? pauseAudio : playAudio}
+                className="p-2 bg-purple-600 hover:bg-purple-700 rounded-full shadow-md transition-all duration-200"
+                title={audioPlaying ? "Pausar" : "Reproducir"}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {audioPlaying ? (
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16.6582 9.28638C18.098 10.1862 18.8178 10.6361 19.0647 11.2122C19.2803 11.7152 19.2803 12.2847 19.0647 12.7878C18.8178 13.3638 18.098 13.8137 16.6582 14.7136L9.896 18.94C8.29805 19.9387 7.49907 20.4381 6.83973 20.385C6.26501 20.3388 5.73818 20.0469 5.3944 19.584C5 19.053 5 18.1108 5 16.2264V7.77357C5 5.88919 5 4.94701 5.3944 4.41598C5.73818 3.9531 6.26501 3.66111 6.83973 3.6149C7.49907 3.5619 8.29805 4.06126 9.896 5.05998L16.6582 9.28638Z" />
+                  </svg>
+                )}
+              </motion.button>
+
+              <motion.button
+                onClick={stopAudio}
+                disabled={!audio}
+                className="p-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full shadow-md transition-all duration-200"
+                title="Detener"
+                whileHover={{ scale: audio ? 1.1 : 1 }}
+                whileTap={{ scale: audio ? 0.95 : 1 }}
+              >
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 6h12v12H6z" />
+                </svg>
+              </motion.button>
+
+              {audio && duration > 0 && (
+                <div className="flex items-center space-x-2 ml-2">
+                  <span className="text-xs font-medium text-purple-700 min-w-[40px]">{formatTime(currentTime)}</span>
+                  <div
+                    className="w-32 h-2 bg-purple-200 rounded-full cursor-pointer overflow-hidden"
+                    onClick={handleProgressClick}
+                  >
+                    <motion.div
+                      className="h-full bg-purple-600"
+                      style={{ width: `${(currentTime / duration) * 100}%` }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(currentTime / duration) * 100}%` }}
+                      transition={{ duration: 0.1 }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-purple-700 min-w-[40px]">{formatTime(duration)}</span>
+                </div>
+              )}
+
+              {!audio && (
+                <span className="text-xs text-purple-700 font-medium">Escuchar documento</span>
+              )}
+
+              {audioError && (
+                <span className="text-xs text-red-600 font-medium">{audioError}</span>
+              )}
+            </>
+          )}
+        </motion.div>
+
+        {/* Separador con padding */}
+        <div className="w-4"></div>
+
+        {/* Controles de Zoom */}
         <motion.div
           className="flex items-center space-x-2"
           initial={{ opacity: 0, x: 20 }}
