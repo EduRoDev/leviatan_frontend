@@ -57,7 +57,7 @@ export default function Navbar() {
             <h1 className="text-xl font-semibold text-white">Teach bot</h1>
             <div className="hidden md:flex items-center space-x-6 ml-8">
               <Link
-                to="#"
+                to="/inicio"
                 className={`transition-colors ${
                   location.pathname === "/" ? "text-white" : "text-white/80 hover:text-white"
                 }`}

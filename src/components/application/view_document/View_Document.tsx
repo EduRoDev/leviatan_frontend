@@ -9,6 +9,7 @@ import type { Summary } from "../../../utils/interfaces/summary.interface"
 import type { Flashcard } from "../../../utils/interfaces/flashcards.interfaces"
 import { Chatbot } from "../view_document/Chat/Chat"
 import { Quiz } from "../view_document/Quiz/Quiz"
+import { StudyPlan } from "../view_document/StudyPlan/StudyPlan"
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString()
 
@@ -26,7 +27,7 @@ export function ViewDocument() {
     const [summaryExists, setSummaryExists] = useState<boolean | null>(null)
     const [flashcardsExist, setFlashcardsExist] = useState<boolean | null>(null)
     const { token } = useAuth()
-    const [activeTab, setActiveTab] = useState<"summary" | "flashcards" | "chat" | "quiz">("summary")
+    const [activeTab, setActiveTab] = useState<"summary" | "flashcards" | "chat" | "quiz" | "study_plan">("summary")
 
     console.log("Viewing document with ID:", documentId)
 
@@ -73,11 +74,11 @@ export function ViewDocument() {
             }
         }
 
-        if (documentId) {
+        if (documentId && token) {
             checkSummaryExists()
             checkFlashcardsExist()
         }
-    }, [documentId])
+    }, [documentId, token])
 
     const handleCreateSummary = async () => {
         setIsLoading(true)
@@ -116,10 +117,10 @@ export function ViewDocument() {
             if (!response.ok) {
                 throw new Error("Error creating flashcards")
             }
-            
+
             // Esperar un poco para que el backend procese
             await new Promise(resolve => setTimeout(resolve, 1500))
-            
+
             // Recargar las flashcards desde el servidor
             const fetchResponse = await fetch(`${Enviroment.API_URL}/cards/flash/${documentId}`, {
                 method: "GET",
@@ -127,11 +128,11 @@ export function ViewDocument() {
                     Authorization: `Bearer ${token}`,
                 },
             })
-            
+
             if (fetchResponse.ok) {
                 const flashcardsData = await fetchResponse.json()
                 console.log("Flashcards loaded after creation:", flashcardsData)
-                
+
                 // Asegurarse de que flashcardsData es un array
                 if (Array.isArray(flashcardsData) && flashcardsData.length > 0) {
                     setFlashcards(flashcardsData)
@@ -178,8 +179,8 @@ export function ViewDocument() {
                     <button
                         onClick={() => setActiveTab("summary")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeTab === "summary"
-                                ? "border-b-2 border-primary text-primary bg-lavender/10"
-                                : "text-gray-600 hover:text-gray-900"
+                            ? "border-b-2 border-primary text-primary bg-lavender/10"
+                            : "text-gray-600 hover:text-gray-900"
                             }`}
                     >
                         <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,8 +196,8 @@ export function ViewDocument() {
                     <button
                         onClick={() => setActiveTab("flashcards")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeTab === "flashcards"
-                                ? "border-b-2 border-primary text-primary bg-lavender/10"
-                                : "text-gray-600 hover:text-gray-900"
+                            ? "border-b-2 border-primary text-primary bg-lavender/10"
+                            : "text-gray-600 hover:text-gray-900"
                             }`}
                     >
                         <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,8 +213,8 @@ export function ViewDocument() {
                     <button
                         onClick={() => setActiveTab("quiz")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeTab === "quiz"
-                                ? "border-b-2 border-primary text-primary bg-lavender/10"
-                                : "text-gray-600 hover:text-gray-900"
+                            ? "border-b-2 border-primary text-primary bg-lavender/10"
+                            : "text-gray-600 hover:text-gray-900"
                             }`}
                     >
                         <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,10 +228,27 @@ export function ViewDocument() {
                         Quiz
                     </button>
                     <button
+                        onClick={() => setActiveTab("study_plan")}
+                        className={`flex-1 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeTab === "study_plan"
+                            ? "border-b-2 border-primary text-primary bg-lavender/10"
+                            : "text-gray-600 hover:text-gray-900"
+                            }`}
+                    >
+                        <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                            />
+                        </svg>
+                        Plan de Estudio
+                    </button>
+                    <button
                         onClick={() => setActiveTab("chat")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap ${activeTab === "chat"
-                                ? "border-b-2 border-primary text-primary bg-lavender/10"
-                                : "text-gray-600 hover:text-gray-900"
+                            ? "border-b-2 border-primary text-primary bg-lavender/10"
+                            : "text-gray-600 hover:text-gray-900"
                             }`}
                     >
                         <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -615,6 +633,19 @@ export function ViewDocument() {
                                         <Quiz />
                                     </div>
                                 </div>
+                            </motion.div>
+                        )}
+
+                        {activeTab === "study_plan" && (
+                            <motion.div
+                                key="study_plan"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.2 }}
+                                className="h-full overflow-y-auto"
+                            >
+                                <StudyPlan documentId={documentId} />
                             </motion.div>
                         )}
 

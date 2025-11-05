@@ -127,6 +127,8 @@ export function Quiz() {
         }
     }
 
+    
+
     const handleAnswerSelect = (answerIndex: number) => {
         if (selectedAnswer === null && quiz?.questions) {
             setSelectedAnswer(answerIndex)
