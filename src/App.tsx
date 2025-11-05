@@ -12,6 +12,7 @@ import { PublicRoute } from "./components/auth/PublicRoute";
 import Landing from "./components/landing/landing";
 import ProfileEdit from "./components/application/profile/profileEdit";
 import ProfileChangePass from "./components/application/profile/profileChangePass";
+import Inicio from "./components/Inicio";
 
 function App() {
   return (
@@ -37,7 +38,18 @@ function App() {
               </PublicRoute>
             }
           />
+          <Route
+            path="/inicio"
+            element= {
+              <ProtectedRoute>
+                <Layout showSidebar={false}>
+                  <Inicio />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
 
+          {/* Ruta para visualizar las asignaturas - PROTEGIDA */}
           <Route
             path="/subject"
             element={
