@@ -5,7 +5,7 @@ export function RootRedirect() {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/subject" replace />;
+    return <Navigate to="/inicio" replace />;
   }
 
   return <Navigate to="/landing" replace />;

@@ -10,7 +10,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return <Navigate to="/subject" replace />;
+    return <Navigate to="/inicio" replace />;
   }
 
   return <>{children}</>;
