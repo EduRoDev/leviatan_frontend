@@ -120,7 +120,7 @@ export default function Login() {
 
         setShowLoginSuccessPopup(true);
         setTimeout(() => setShowLoginSuccessPopup(false), 5000);
-        setTimeout(() => navigate("/subject"), 3000);
+        setTimeout(() => navigate("/inicio"), 3000);
       }
     } catch (err) {
       setShowEmailPasswordPopup(true);
